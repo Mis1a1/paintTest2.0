@@ -8,7 +8,7 @@
 <body style="margin: 10px;">
 
 <div class="container">
-    <canvas id="canvas"  >Your browser is not supported.</canvas>
+    <canvas id="canvas">Your browser is not supported.</canvas>
     <div id="info">
         <h5>Нажмите "Q" для выбора малой кисти</h5>
         <h5>Нажмите "W" для выбора средней кисти</h5>
@@ -26,14 +26,15 @@
 
 <script>
     window.addEventListener("load", function onWindowLoad() {
+
         generatePalette(document.getElementById("palette"));
 
         let
             canv = document.getElementById('canvas'),
             ctx = canv.getContext('2d'),
             isMouseDown = false,
-            coords = [];
-
+            coords = JSON.parse(localStorage.getItem("coords"));
+        replaySave();
 
         //logic
 
@@ -93,14 +94,14 @@
         }
 
 
-        canv.onmousemove = function drawIfPressed (e) {
+        canv.onmousemove = function drawIfPressed(e) {
             if (isMouseDown) {
                 coords.push([e.clientX, e.clientY]);
                 var x = e.offsetX;
                 var y = e.offsetY;
                 var dx = e.movementX;
                 var dy = e.movementY;
-                
+
                 if (e.buttons > 0) {
                     ctx.beginPath();
                     ctx.moveTo(x, y);
@@ -114,6 +115,38 @@
 
         function save() {
             localStorage.setItem('coords', JSON.stringify(coords));
+            let saved = true;
+
+        }
+
+        function replaySave() {
+
+            let
+                timer = setInterval(function () {
+                    if (!coords.length) {
+                        clearInterval(timer);
+                        ctx.beginPath();
+                        return;
+                    }
+
+                    let
+                        crd = coords.shift(),
+                        e = {
+                            x: crd["0"],
+                            y: crd["1"]
+                        };
+
+                    ctx.lineTo(e.x, e.y);
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    // ctx.arc(e.x, e.y, p, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.beginPath();
+                    ctx.moveTo(e.x, e.y);
+
+                }, 0);
 
         }
 
@@ -161,6 +194,11 @@
             if (e.keyCode === 83) {
                 save();
                 console.log('Saved')
+                //save
+            }
+            if (e.keyCode === 84) {
+                saveUp();
+                console.log('Сохранение восстановленно')
                 //save
             }
             if (e.keyCode === 82) {
